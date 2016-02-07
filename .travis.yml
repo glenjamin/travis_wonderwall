@@ -1,7 +1,7 @@
-language: python
-python:
-  - '2.7'
-  - '3.4'
+language: node_js
+node_js:
+  - 4.2
+  - node
 sudo: false
 script:
   - echo "Doing something..."
