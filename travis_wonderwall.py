@@ -9,7 +9,7 @@ try:
 except ImportError:
     import urllib2
 
-log = logging.getLogger("travis.leader")
+log = logging.getLogger("travis.wonderwall")
 log.addHandler(logging.StreamHandler())
 log.setLevel(logging.INFO)
 

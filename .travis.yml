@@ -1,43 +1,20 @@
 language: python
 python:
   - '2.7'
-  - '3.2'
-  - '3.3'
   - '3.4'
-  - 'pypy'
-  - 'pypy3'
-  - '2.6'
-env:
-  # robot
-  GITHUB_TOKEN_P1=7bea5d170ca6f7c162d7
-  GITHUB_TOKEN_P2=58961507e413df080e9c
-sudo: false # Use container-based infrastructure
+sudo: false
 script:
   - echo "Doing something..."
+  - env
+  - sleep 3
   - echo "Done"
 after_success:
-  - export GITHUB_TOKEN=${GITHUB_TOKEN_P1}${GITHUB_TOKEN_P2}
-  - python travis_after_all.py
-  - export $(cat .to_export_back)
   - |
-      if [ "$BUILD_LEADER" = "YES" ]; then
-        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-          echo "All jobs succeeded! PUBLISHING..."
-        else
-          echo "Some jobs failed"
-        fi
-      fi
-after_failure:
-  - export GITHUB_TOKEN=${GITHUB_TOKEN_P1}${GITHUB_TOKEN_P2}
-  - python travis_after_all.py
-  - export $(cat .to_export_back)
-  - |
-      if [ "$BUILD_LEADER" = "YES" ]; then
-        if [ "$BUILD_AGGREGATE_STATUS" = "others_failed" ]; then
-          echo "All jobs failed"
-        else
-          echo "Some jobs failed"
-        fi
-      fi
-after_script:
-  - echo leader=$BUILD_LEADER status=$BUILD_AGGREGATE_STATUS
+    python travis_wonderwall.py || (
+      echo do
+      echo a
+      echo bunch
+      echo of
+      echo stuff
+      echo here
+    )
