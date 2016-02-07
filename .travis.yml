@@ -10,11 +10,11 @@ script:
   - echo "Done"
 after_success:
   - |
-    python travis_wonderwall.py || (
-      echo do
-      echo a
-      echo bunch
-      echo of
-      echo stuff
-      echo here
-    )
+    python travis_wonderwall.py job=2 version=node branch=master <<BASH
+    echo do
+    echo a
+    echo bunch
+    echo of
+    echo stuff
+    echo here
+    BASH
