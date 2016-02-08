@@ -96,30 +96,30 @@ def main():
     if not assertion_values:
         fail("No assertions made!")
 
-    log("Checking reasons to skip ...")
-    skip_ok, after_skip = check_assertions([job, branch], assertion_values)
+    log("Checking build properties ...")
+    build_ok, after_build = check_assertions([job, branch], assertion_values)
 
-    if after_skip:
-        log("Checking if job properties match expected ...")
-        props_ok, leftover = check_assertions([version], after_skip)
+    if after_build:
+        log("Checking job properties ...")
+        job_ok, leftover = check_assertions([version], after_build)
     else:
-        props_ok, leftover = True, {}
+        job_ok, leftover = True, {}
 
     if leftover:
         fail("Unrecognised assertions: %r" % leftover)
 
-    if not skip_ok:
-        return done("Build doesnt qualify, skipping")
+    if not build_ok:
+        return done("Build doesn't match properties, skipping")
 
-    if not props_ok:
+    if not job_ok:
         if "job" in assertion_values:
             return fail(
-                "Job %s doesn't match expected properties" % TRAVIS_JOB_NUMBER
+                "Job %s doesn't match properties" % TRAVIS_JOB_NUMBER
             )
 
         return done("Job doesn't match properties, skipping")
 
-    log("Properties matched, proceeding as leader")
+    log("All properties matched, proceeding as leader")
 
     # TODO: check travis status
 
