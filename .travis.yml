@@ -8,12 +8,13 @@ script:
   - env
   - sleep 3
   - echo "Done"
-after_success: |
-  python travis_wonderwall.py job=2 version=node branch=master <<BASH
-    echo do
-    echo a
-    echo bunch
-    echo of
-    echo stuff
-    echo here
-  BASH
+after_success:
+  - |
+    python travis_wonderwall.py job=2 version=node branch=master <<-BASH
+      echo do
+      echo a
+      echo bunch
+      echo of
+      echo stuff
+      echo here
+    BASH
