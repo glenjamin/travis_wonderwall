@@ -27,7 +27,7 @@ def done(msg):
     sys.exit(0)
 
 def fail(msg):
-    log(msg)
+    log("Error: " + msg)
     sys.exit(1)
 
 TRAVIS_BRANCH = os.getenv('TRAVIS_BRANCH', '')
@@ -41,18 +41,28 @@ def job(val):
 def version(val):
     return val == get_language_version()
 
-exclusions = { f.__name__: f for f in [branch, job, version] }
-def assert_exclusions(assertions):
-    for name, val in assertions.items():
-        if name not in exclusions:
-            fail("Unknown assertion %s" % name)
+def omit(d, keys):
+    """
+    Return new dict based on `d` without entries in `keys`
+    """
+    return { k:v for k, v in d.items() if k not in keys }
 
-        func = exclusions[name]
-        start("Checking %s = %s" % (name, val))
-        result = func(val)
-        end("ok" if result else "no")
-        if not result:
-            return name
+def check_assertions(assertions, values):
+    """
+    returns (passed: boolean, unused_values: dict)
+    """
+    checks = {}
+    for func in assertions:
+        name = func.__name__
+
+        if name not in values: continue
+
+        val = values[name]
+        start("Checking %r matches %r" % (name, val))
+        checks[name] = func(val)
+        end("ok" if checks[name] else "no")
+
+    return all(checks.values()), omit(values, checks.keys())
 
 def get_language_version():
     for k, v in os.environ.items():
@@ -79,16 +89,37 @@ def read_script():
     else:
         return "echo 'No script specified'; exit 1"
 
-if __name__ == '__main__':
-    assertions = parse_assertions()
+def main():
+    assertion_values = parse_assertions()
     script = read_script()
 
-    # TODO: error when matrix assertions don't match but job does
+    if not assertion_values:
+        fail("No assertions made!")
 
     log("Checking reasons to skip ...")
-    skip = assert_exclusions(assertions)
-    if skip:
-        done("Skipping build")
+    skip_ok, after_skip = check_assertions([job, branch], assertion_values)
+
+    if after_skip:
+        log("Checking if job properties match expected ...")
+        props_ok, leftover = check_assertions([version], after_skip)
+    else:
+        props_ok, leftover = True, {}
+
+    if leftover:
+        fail("Unrecognised assertions: %r" % leftover)
+
+    if not skip_ok:
+        return done("Build doesnt qualify, skipping")
+
+    if not props_ok:
+        if "job" in assertion_values:
+            return fail(
+                "Job %s doesn't match expected properties" % TRAVIS_JOB_NUMBER
+            )
+
+        return done("Job doesn't match properties, skipping")
+
+    log("Properties matched, proceeding as leader")
 
     # TODO: check travis status
 
@@ -96,3 +127,6 @@ if __name__ == '__main__':
     p = subprocess.Popen("bash", stdin=subprocess.PIPE, shell=True)
     p.communicate(script.encode())
     sys.exit(p.wait())
+
+if __name__ == '__main__':
+    main()
