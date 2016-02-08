@@ -41,7 +41,7 @@ def job(val):
 def version(val):
     return val == get_language_version()
 
-exclusions = { f.func_name: f for f in [branch, job, version] }
+exclusions = { f.__name__: f for f in [branch, job, version] }
 def assert_exclusions(assertions):
     for name, val in assertions.items():
         if name not in exclusions:
@@ -94,5 +94,5 @@ if __name__ == '__main__':
 
     # All good, execute the script
     p = subprocess.Popen("bash", stdin=subprocess.PIPE, shell=True)
-    p.communicate(script)
+    p.communicate(script.encode())
     sys.exit(p.wait())
