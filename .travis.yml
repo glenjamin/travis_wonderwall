@@ -3,11 +3,16 @@ python:
   - 2.7
   - 3.3
   - 3.4
+  - 3.5
 sudo: false
 script:
   - sh test.sh
   - sleep 30
   - '[[ "$TRAVIS_JOB_NUMBER" != *.3 ]]'
+  - '[[ "$TRAVIS_JOB_NUMBER" != *.4 ]]'
+matrix:
+  allow_failures:
+    - python: 3.5
 after_success:
   - |
     python travis_wonderwall.py job=2 version=3.4 branch=master <<BASH

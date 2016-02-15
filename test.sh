@@ -16,6 +16,7 @@ should_skip='
     false
 '
 
+unset TRAVIS_PYTHON_VERSION
 unset TRAVIS_BUILD_ID
 
 test "All matching"
