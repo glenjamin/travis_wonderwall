@@ -95,17 +95,17 @@ def read_script():
 def fetch_completed_results():
     # TODO: max timeout
     results = matrix_status()
-    print(results, '----')
     while still_going(results):
+        log("Results not complete, waiting %d seconds" % POLL_INTERVAL)
         time.sleep(POLL_INTERVAL)
         results = matrix_status()
-        print(results, '----')
     return results
 
 def matrix_status():
     url = "%s/builds/%s" % (TRAVIS_URL, TRAVIS_BUILD_ID)
     headers = { 'Accept': 'application/vnd.travis-ci.2+json' }
     req = urllib2.Request(url, headers=headers)
+    log("Requesting results from %s" % url)
     response = urllib2.urlopen(req).read().decode('utf8')
     raw_json = json.loads(response)
     return [
