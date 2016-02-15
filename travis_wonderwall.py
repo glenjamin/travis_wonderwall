@@ -30,9 +30,10 @@ def fail(msg):
     log("Error: " + msg)
     sys.exit(1)
 
+TRAVIS_URL = os.getenv('TRAVIS_URL', 'https://api.travis-ci.org')
 TRAVIS_BRANCH = os.getenv('TRAVIS_BRANCH', '')
 TRAVIS_JOB_NUMBER = os.getenv('TRAVIS_JOB_NUMBER', '')
-TRAVIS_BUILD_ID = os.getenv('TRAVIS_BUILD_ID', '')
+TRAVIS_BUILD_ID = os.getenv('TRAVIS_BUILD_ID')
 
 def branch(val):
     return val == TRAVIS_BRANCH
@@ -89,6 +90,32 @@ def read_script():
     else:
         return "echo 'No script specified'; exit 1"
 
+def fetch_completed_results():
+    # TODO: max timeout
+    results = matrix_status()
+    print(results)
+    # while still_pending(results):
+        # time.sleep(POLL_INTERVAL)
+        # results = matrix_status()
+    return results
+
+def matrix_status():
+    url = "%s/builds/%s" % (TRAVIS_URL, TRAVIS_BUILD_ID)
+    headers = {
+        'content-type': 'application/json',
+        'Accept': 'application/vnd.travis-ci.2+json'
+    }
+    req = urllib2.Request(url, headers=headers)
+    response = urllib2.urlopen(req).read()
+    raw_json = json.loads(response)
+    return raw_json["jobs"]
+
+def check_jobs(results):
+    return [job['number'] for job in results if failed_job(job)]
+
+def failed_job(job):
+    return job['state'] != 'passed' and not job['allow_failure']
+
 def main():
     assertion_values = parse_assertions()
     script = read_script()
@@ -122,6 +149,18 @@ def main():
     log("All properties matched, proceeding as leader")
 
     # TODO: check travis status
+    if TRAVIS_BUILD_ID is None:
+        log("No TRAVIS_BUILD_ID, must be in test mode")
+    else:
+        results = fetch_completed_results()
+        failed_jobs = check_jobs(results)
+        if failed_jobs:
+            return done(
+                "Some jobs failed, skipping\nJobs: %s" % ", ".join(failed_jobs)
+            )
+        log("All expected jobs passed")
+
+    log("All expectations passed, running script...")
 
     # All good, execute the script
     p = subprocess.Popen("bash", stdin=subprocess.PIPE, shell=True)
