@@ -34,6 +34,7 @@ TRAVIS_URL = os.getenv('TRAVIS_URL', 'https://api.travis-ci.org')
 TRAVIS_BRANCH = os.getenv('TRAVIS_BRANCH', '')
 TRAVIS_JOB_NUMBER = os.getenv('TRAVIS_JOB_NUMBER', '')
 TRAVIS_BUILD_ID = os.getenv('TRAVIS_BUILD_ID')
+TRAVIS_TEST_RESULT = os.getenv('TRAVIS_TEST_RESULT')
 
 def branch(val):
     return val == TRAVIS_BRANCH
@@ -162,6 +163,9 @@ def main():
         return done("Job doesn't match properties, skipping")
 
     log("All properties matched, proceeding as leader")
+
+    if TRAVIS_TEST_RESULT != "0":
+        return done("Scripts have already failed, skipping")
 
     # TODO: check travis status
     if TRAVIS_BUILD_ID is None:

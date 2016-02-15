@@ -8,11 +8,10 @@ sudo: false
 script:
   - sh test.sh
   - sleep 30
-  - '[[ "$TRAVIS_JOB_NUMBER" != *.3 ]] # fail job 3'
   - '[[ "$TRAVIS_JOB_NUMBER" != *.4 ]] # fail job 4'
   - env
   - |
-    python travis_wonderwall.py job=2 version=3.4 branch=master <<BASH
+    python travis_wonderwall.py job=3 version=3.4 branch=master <<BASH
       echo do
       echo a
       echo bunch
