@@ -31,6 +31,7 @@ def fail(msg):
     sys.exit(1)
 
 TRAVIS_URL = os.getenv('TRAVIS_URL', 'https://api.travis-ci.org')
+POLL_INTERVAL = 5
 TRAVIS_BRANCH = os.getenv('TRAVIS_BRANCH', '')
 TRAVIS_JOB_NUMBER = os.getenv('TRAVIS_JOB_NUMBER', '')
 TRAVIS_BUILD_ID = os.getenv('TRAVIS_BUILD_ID')
@@ -105,7 +106,7 @@ def matrix_status():
     url = "%s/builds/%s" % (TRAVIS_URL, TRAVIS_BUILD_ID)
     headers = { 'Accept': 'application/vnd.travis-ci.2+json' }
     req = urllib2.Request(url, headers=headers)
-    response = urllib2.urlopen(req).read()
+    response = urllib2.urlopen(req).read().decode('utf8')
     raw_json = json.loads(response)
     return [
         job for job in raw_json['jobs']
@@ -120,14 +121,14 @@ def still_going(jobs):
     if any(failed_job(job) for job in jobs):
         return False
 
-    return all(job['finished_at'] for job in jobs)
+    return any(job['finished_at'] is None for job in jobs)
 
 def failed_jobs(results):
     return [job['number'] for job in results if failed_job(job)]
 
 def failed_job(job):
     return (
-        job_state in ['failed', 'errored', 'canceled']
+        job['state'] in ['failed', 'errored', 'canceled']
         and
         not job['allow_failure']
     )
