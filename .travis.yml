@@ -7,7 +7,7 @@ sudo: false
 script:
   - sh test.sh
   - sleep 30
-  - '[[ "$TRAVIS_JOB_NUMBER" == "*.3" ]] && false || true'
+  - '[[ "$TRAVIS_JOB_NUMBER" != *.3 ]]'
 after_success:
   - |
     python travis_wonderwall.py job=2 version=3.4 branch=master <<BASH

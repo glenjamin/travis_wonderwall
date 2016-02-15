@@ -16,6 +16,8 @@ should_skip='
     false
 '
 
+unset TRAVIS_BUILD_ID
+
 test "All matching"
 echo $should_pass | \
     TRAVIS_NODE_VERSION=node TRAVIS_JOB_NUMBER=1.1 TRAVIS_BRANCH=master \

@@ -93,28 +93,43 @@ def read_script():
 def fetch_completed_results():
     # TODO: max timeout
     results = matrix_status()
-    print(results)
-    # while still_pending(results):
-        # time.sleep(POLL_INTERVAL)
-        # results = matrix_status()
+    print(results, '----')
+    while still_going(results):
+        time.sleep(POLL_INTERVAL)
+        results = matrix_status()
+        print(results, '----')
     return results
 
 def matrix_status():
     url = "%s/builds/%s" % (TRAVIS_URL, TRAVIS_BUILD_ID)
-    headers = {
-        'content-type': 'application/json',
-        'Accept': 'application/vnd.travis-ci.2+json'
-    }
+    headers = { 'Accept': 'application/vnd.travis-ci.2+json' }
     req = urllib2.Request(url, headers=headers)
     response = urllib2.urlopen(req).read()
     raw_json = json.loads(response)
-    return raw_json["jobs"]
+    return [
+        job for job in raw_json['jobs']
+            if job['number'] != TRAVIS_JOB_NUMBER
+    ]
 
-def check_jobs(results):
+# Possible states
+# https://github.com/travis-ci/travis.rb/blob/dcc9f20535c811068c4ff9788ae9bd026a116351/lib/travis/client/states.rb
+
+def still_going(jobs):
+    # If anything failed, abort early
+    if any(failed_job(job) for job in jobs):
+        return False
+
+    return all(job['finished_at'] for job in jobs)
+
+def failed_jobs(results):
     return [job['number'] for job in results if failed_job(job)]
 
 def failed_job(job):
-    return job['state'] != 'passed' and not job['allow_failure']
+    return (
+        job_state in ['failed', 'errored', 'canceled']
+        and
+        not job['allow_failure']
+    )
 
 def main():
     assertion_values = parse_assertions()
@@ -153,10 +168,10 @@ def main():
         log("No TRAVIS_BUILD_ID, must be in test mode")
     else:
         results = fetch_completed_results()
-        failed_jobs = check_jobs(results)
-        if failed_jobs:
+        failed = failed_jobs(results)
+        if failed:
             return done(
-                "Some jobs failed, skipping\nJobs: %s" % ", ".join(failed_jobs)
+                "Some jobs failed, skipping\nJobs: %s" % ", ".join(failed)
             )
         log("All expected jobs passed")
 
