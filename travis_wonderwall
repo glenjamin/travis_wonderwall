@@ -36,7 +36,7 @@ TRAVIS_URL = os.getenv('TRAVIS_URL', 'https://api.travis-ci.org')
 POLL_INTERVAL = 5
 TRAVIS_BRANCH = os.getenv('TRAVIS_BRANCH', '')
 TRAVIS_JOB_NUMBER = os.getenv('TRAVIS_JOB_NUMBER', '')
-TRAVIS_TAG = os.getenv('TRAVIS_TAG')
+TRAVIS_TAG = os.getenv('TRAVIS_TAG', '')
 TRAVIS_BUILD_ID = os.getenv('TRAVIS_BUILD_ID')
 TRAVIS_TEST_RESULT = os.getenv('TRAVIS_TEST_RESULT')
 
@@ -45,7 +45,7 @@ def branch(val):
 def job(val):
     return TRAVIS_JOB_NUMBER.endswith("." + val)
 def tag(val):
-    return TRAVIS_TAG is not None
+    return TRAVIS_TAG == TRAVIS_BRANCH
 def version(val):
     return val == get_language_version()
 

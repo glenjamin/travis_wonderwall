@@ -20,6 +20,8 @@ unset TRAVIS_TAG
 unset TRAVIS_PYTHON_VERSION
 unset TRAVIS_BUILD_ID
 
+export TRAVIS_TAG=''
+
 test "All matching"
 echo $should_pass | \
     TRAVIS_NODE_VERSION=node TRAVIS_JOB_NUMBER=1.1 \
@@ -30,7 +32,7 @@ echo $should_pass | \
 test "All matching with tag"
 echo $should_pass | \
     TRAVIS_NODE_VERSION=node TRAVIS_JOB_NUMBER=1.1 \
-    TRAVIS_TEST_RESULT=0 TRAVIS_BRANCH=master TRAVIS_TAG=v0.1.2\
+    TRAVIS_TEST_RESULT=0 TRAVIS_BRANCH=v0.1.2 TRAVIS_TAG=v0.1.2\
     ./travis_wonderwall branch=master job=1 version=node tag=yes
 [ "$?" -eq 0 ] || fail
 
@@ -72,5 +74,5 @@ test "Tag wanted but not found "
 echo $should_skip | \
     TRAVIS_NODE_VERSION=node TRAVIS_JOB_NUMBER=1.2 \
     TRAVIS_TEST_RESULT=0 TRAVIS_BRANCH=master \
-    ./travis_wonderwall branch=master job=2 version=node tag=yes
+    ./travis_wonderwall job=2 version=node tag=yes
 [ "$?" -eq 0 ] || fail
