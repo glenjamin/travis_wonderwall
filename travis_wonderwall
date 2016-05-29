@@ -39,6 +39,7 @@ TRAVIS_JOB_NUMBER = os.getenv('TRAVIS_JOB_NUMBER', '')
 TRAVIS_TAG = os.getenv('TRAVIS_TAG', '')
 TRAVIS_BUILD_ID = os.getenv('TRAVIS_BUILD_ID')
 TRAVIS_TEST_RESULT = os.getenv('TRAVIS_TEST_RESULT')
+TRAVIS_PULL_REQUEST = os.getenv('TRAVIS_PULL_REQUEST', 'false')
 
 def branch(val):
     return val == TRAVIS_BRANCH
@@ -48,6 +49,12 @@ def tag(val):
     return TRAVIS_TAG == TRAVIS_BRANCH
 def version(val):
     return val == get_language_version()
+def pr(flag):
+    if flag == 'false':
+        return TRAVIS_PULL_REQUEST == 'false'
+    elif flag == 'true':
+        return TRAVIS_PULL_REQUEST and TRAVIS_PULL_REQUEST != 'false'
+    return False
 
 def omit(d, keys):
     """
@@ -146,7 +153,7 @@ def main():
         fail("No assertions made!")
 
     log("Checking build properties ...")
-    build_assertions = [job, branch, tag]
+    build_assertions = [job, branch, tag, pr]
     build_ok, after_build = check_assertions(build_assertions, assertion_values)
 
     if after_build:
